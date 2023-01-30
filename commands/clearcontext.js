@@ -10,12 +10,10 @@ module.exports = {
             server.openAiChannelIDs.general.forEach(channelId => {
                 if (channelId == interaction.channelId) {
                     client.context.generalChat[interaction.user.id] = []
-                    console.log('match found1')
                 }
             })
             server.openAiChannelIDs.multiplayer.forEach(channelId => {
                 if (channelId == interaction.channelId) {
-                    console.log('match found2')
                     client.context.multiplayerChat[interaction.channelId] = []
                 }
             })
