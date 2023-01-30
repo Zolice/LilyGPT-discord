@@ -1,0 +1,6 @@
+.vscode
+node_modules
+config.json
+.env
+package.json
+package-lock.json
