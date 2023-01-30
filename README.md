@@ -12,3 +12,6 @@ npm install dotenv
 npm install fs
 npm install fs-extra
 ```
+
+# Usage
+- type a prompt for the bot, such as ```?name a cat for me```
