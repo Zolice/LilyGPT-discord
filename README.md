@@ -1,6 +1,10 @@
 # LilyGPT
 A Discord Bot powered by ChatGPT
 
+![image](LilyGPT.jpg)
+
+*image by [@InfernoDragon0](https://github.com/infernodragon0)*
+
 # Environment Variables
 - chatGPTToken: your secret key for openAI
 - discordToken: your token for discord bot
