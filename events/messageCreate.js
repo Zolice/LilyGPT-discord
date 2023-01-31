@@ -5,12 +5,13 @@ module.exports = {
         if (!message.content.startsWith('?')) return
 
         var msg = message.content.replace('?', '')
+        if (msg == "") return
 
         var context = null
         var type = null
 
-        client.config.discord.registeredServers.forEach(server => {
-            server.openAiChannelIDs.general.forEach(channelId => {
+        if(client.config.discord.registeredServers[message.guildId]) {
+            client.config.discord.registeredServers[message.guildId].openAiChannelIDs.general.forEach(channelId => {
                 if (channelId == message.channelId) {
                     type = "general"
                     // Check for Context
@@ -28,7 +29,7 @@ module.exports = {
                 }
             })
 
-            server.openAiChannelIDs.multiplayer.forEach(channelId => {
+            client.config.discord.registeredServers[message.guildId].openAiChannelIDs.multiplayer.forEach(channelId => {
                 if (channelId == message.channelId) {
                     type = "multiplayer"
                     // Check for Context
@@ -45,7 +46,8 @@ module.exports = {
                     }
                 }
             })
-        })
+        }
+        else return
 
         if (!context) return
 
@@ -54,7 +56,7 @@ module.exports = {
 
         context.push(`Human: ${msg}`)
         // context.splice(0, 0, `Human: ${msg}`)
-        
+
         var contextString
         context.forEach((line, index) => {
             contextString += line + '\n'
@@ -77,16 +79,21 @@ module.exports = {
 
         console.log(response.data)
 
-        // Return the response
-        reply.edit(response.data.choices[0].text)
 
         // Update context
         var responseText = response.data.choices[0].text.replace('\n', '')
+        while (responseText.includes('\n')) {
+            responseText = responseText.replace('\n', '')
+        }
+
         context.push(`AI: ${response.data.choices[0].text}`)
         // context.splice(0, 0, `AI: ${responseText}`)
-        
-        
-        switch(type) {
+
+        // Return the response
+        reply.edit(response.data.choices[0].text)
+
+
+        switch (type) {
             case "general":
                 client.context.generalChat[message.author.id] = context
                 break
