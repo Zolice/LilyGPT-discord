@@ -2,8 +2,9 @@ module.exports = {
     name: 'messageCreate',
     // once: true,
     async execute(message, client, fs) {
-        if (!message.content.startsWith('?')) return
+        if (!message.content.startsWith('?') && !message.content.startsWith('//')) return
 
+        var codex = message.content.startsWith('//')
         var msg = message.content.replace('?', '')
         if (msg == "") return
 
@@ -54,7 +55,7 @@ module.exports = {
         // Send a message
         let reply = await message.reply('Getting a response...')
 
-        context.push(`Human: ${msg}`)
+        if (!codex) context.push(`Human: ${msg}`)
         // context.splice(0, 0, `Human: ${msg}`)
 
         var contextString
@@ -62,22 +63,42 @@ module.exports = {
             contextString += line + '\n'
         })
 
+        var response
         // Access the API and get API response
-        const response = await client.openai.createCompletion({
-            model: client.config.openai.selectedModel,
-            prompt: contextString,
-            max_tokens: 256,
-            temperature: 0.9,
-            n: 1,
-            stream: false,
-            stop: [' Human:', ' AI:'],
-        }).catch((err) => {
-            reply.edit("Due to an error, I couldn't get a response. Erorr: " + err)
-            console.log(err)
-            return
-        })
-
-        console.log(response.data)
+        if (codex) {
+            response = await client.openai.createCompletion({
+                model: "code-davinci-002",
+                prompt: msg,
+                max_tokens: 512,
+                temperature: 0,
+                n: 1,
+                stream: false,
+            }).catch((err) => {
+                reply.edit("Due to an error, I couldn't get a response. Erorr: " + err)
+                console.log(err)
+                return
+            })
+    
+            console.log(response.data)
+        }
+        else {
+            response = await client.openai.createCompletion({
+                model: client.config.openai.selectedModel,
+                prompt: contextString,
+                max_tokens: 256,
+                temperature: 0.9,
+                n: 1,
+                stream: false,
+                stop: [' Human:', ' AI:'],
+            }).catch((err) => {
+                reply.edit("Due to an error, I couldn't get a response. Erorr: " + err)
+                console.log(err)
+                return
+            })
+    
+            console.log(response.data)
+        }
+        
 
 
         // Update context
@@ -86,11 +107,11 @@ module.exports = {
             responseText = responseText.replace('\n', '')
         }
 
-        context.push(`AI: ${response.data.choices[0].text}`)
+        if (!codex) context.push(`AI: ${response.data.choices[0].text}`)
         // context.splice(0, 0, `AI: ${responseText}`)
 
         // Return the response
-        reply.edit(response.data.choices[0].text)
+        reply.edit(response.data.choices[0].text + ".") //the dot to prevent Cannot send an empty message errors
 
 
         switch (type) {
