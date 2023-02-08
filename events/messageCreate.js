@@ -103,10 +103,10 @@ module.exports = {
 
         // Update context
         var responseText = response.data.choices[0].text.replace('\n', '')
-        while (responseText.includes('\n')) {
-            responseText = responseText.replace('\n', '')
+        // while (responseText.includes('\n')) {
+        //     responseText = responseText.replace('\n', '')
             responseText = responseText.replace('AI:', '')
-        }
+        // }
 
         if (!codex) context.push(`AI: ${response.data.choices[0].text}`)
         // context.splice(0, 0, `AI: ${responseText}`)
