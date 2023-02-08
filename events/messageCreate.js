@@ -11,7 +11,7 @@ module.exports = {
         var context = null
         var type = null
 
-        if(client.config.discord.registeredServers[message.guildId]) {
+        if (client.config.discord.registeredServers[message.guildId]) {
             client.config.discord.registeredServers[message.guildId].openAiChannelIDs.general.forEach(channelId => {
                 if (channelId == message.channelId) {
                     type = "general"
@@ -78,13 +78,13 @@ module.exports = {
                 console.log(err)
                 return
             })
-    
+
             console.log(response.data)
         }
         else {
             response = await client.openai.createCompletion({
                 model: client.config.openai.selectedModel,
-                prompt: contextString,
+                prompt: contextString + "\nAI:",
                 max_tokens: 256,
                 temperature: 0.9,
                 n: 1,
@@ -95,16 +95,17 @@ module.exports = {
                 console.log(err)
                 return
             })
-    
+
             console.log(response.data)
         }
-        
+
 
 
         // Update context
         var responseText = response.data.choices[0].text.replace('\n', '')
         while (responseText.includes('\n')) {
             responseText = responseText.replace('\n', '')
+            responseText = responseText.replace('AI:', '')
         }
 
         if (!codex) context.push(`AI: ${response.data.choices[0].text}`)
