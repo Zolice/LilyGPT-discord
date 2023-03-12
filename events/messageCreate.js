@@ -82,14 +82,22 @@ module.exports = {
             console.log(response.data)
         }
         else {
-            response = await client.openai.createCompletion({
-                model: client.config.openai.selectedModel,
-                prompt: contextString + "\nAI:",
-                max_tokens: 256,
-                temperature: 0.9,
-                n: 1,
-                stream: false,
-                stop: [' Human:', ' AI:'],
+            const preparedContext = [
+                {role: "system", content: "You are an orange cat named Lily, you know a lot about game development, and games in general. Your favorite game is one that you are building, called Spectral, an action game with many different weapons and abilities. You are also a member of the Spectral Discord server, and you are talking to people who likes to play games."},
+            ]
+
+            context.forEach((line, index) => {
+                if (line.includes('Human:')) {
+                    preparedContext.push({role: "user", content: line.replace('Human:', '')})
+                }
+                else if (line.includes('AI:')) {
+                    preparedContext.push({role: "assistant", content: line.replace('AI:', '')})
+                }
+            })
+
+            response = await client.openai.createChatCompletion({
+                model: "gpt-3.5-turbo",
+                messages: context,
             }).catch((err) => {
                 reply.edit("Due to an error, I couldn't get a response. Erorr: " + err)
                 console.log(err)
@@ -102,17 +110,23 @@ module.exports = {
 
 
         // Update context
-        var responseText = response.data.choices[0].text.replace('\n', '')
+        var responseText = ""
+        if (codex) {
+            responseText = response.data.choices[0].text.replace('\n', '')
+        }
+        else {
+            responseText = response.data.choices[0].message.content
+        }
         // while (responseText.includes('\n')) {
         //     responseText = responseText.replace('\n', '')
-            responseText = responseText.replace('AI:', '')
+        responseText = responseText.replace('AI:', '')
         // }
 
-        if (!codex) context.push(`AI: ${response.data.choices[0].text}`)
+        if (!codex) context.push(`AI: ${response.data.choices[0].message.content}`)
         // context.splice(0, 0, `AI: ${responseText}`)
 
         // Return the response
-        reply.edit(response.data.choices[0].text + ".") //the dot to prevent Cannot send an empty message errors
+        reply.edit(responseText + ".") //the dot to prevent Cannot send an empty message errors
 
 
         switch (type) {
