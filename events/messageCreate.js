@@ -97,7 +97,9 @@ module.exports = {
 
             response = await client.openai.createChatCompletion({
                 model: "gpt-3.5-turbo",
-                messages: context,
+                messages: preparedContext,
+                max_tokens: 400,
+
             }).catch((err) => {
                 reply.edit("Due to an error, I couldn't get a response. Erorr: " + err)
                 console.log(err)
