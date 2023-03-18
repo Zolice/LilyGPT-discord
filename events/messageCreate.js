@@ -1,6 +1,5 @@
 module.exports = {
     name: 'messageCreate',
-    // once: true,
     async execute(message, client, fs) {
         if (!message.content.startsWith('?') && !message.content.startsWith('//')) return
 
@@ -21,8 +20,6 @@ module.exports = {
                     } else {
                         context = client.context.generalChat[message.author.id]
                         if (context.length > 6) {
-                            // context.shift()
-                            // context.shift()
                             context.pop()
                             context.pop()
                         }
@@ -41,8 +38,6 @@ module.exports = {
                         if (context.length > 6) {
                             context.shift()
                             context.shift()
-                            // context.pop()
-                            // context.pop()
                         }
                     }
                 }
@@ -53,10 +48,9 @@ module.exports = {
         if (!context) return
 
         // Send a message
-        let reply = await message.reply('Getting a response...')
+        // let reply = await message.reply('Getting a response...')
 
         if (!codex) context.push(`Human: ${msg}`)
-        // context.splice(0, 0, `Human: ${msg}`)
 
         var contextString
         context.forEach((line, index) => {
@@ -74,7 +68,7 @@ module.exports = {
                 n: 1,
                 stream: false,
             }).catch((err) => {
-                reply.edit("Due to an error, I couldn't get a response. Erorr: " + err)
+                message.reply("Due to an error, I couldn't get a response. Erorr: " + err)
                 console.log(err)
                 return
             })
@@ -83,15 +77,15 @@ module.exports = {
         }
         else {
             const preparedContext = [
-                {role: "system", content: "You are an orange cat named Lily, you know a lot about game development, and games in general. Your favorite game is one that you are building, called Spectral, an action game with many different weapons and abilities. You love music, such as EDM, and music that is released under Monstercat. You are also a member of the Spectral Discord server, and you are talking to people who likes to play games. You have been created as a discord bot, by InfernoDragon0, or Inferno for short, and Zolice, they are your creators that provides a discord bot to communicate with you. Inferno is a full stack developer, who is also a furry, and loves cats. Zolice is a web developer who likes to program in javascript."},
+                { role: "system", content: "You are an orange cat named Lily, you know a lot about game development, and games in general. Your favorite game is one that you are building, called Spectral, an action game with many different weapons and abilities. You love music, such as EDM, and music that is released under Monstercat. You are also a member of the Spectral Discord server, and you are talking to people who likes to play games. You have been created as a discord bot, by InfernoDragon0, or Inferno for short, and Zolice, they are your creators that provides a discord bot to communicate with you. Inferno is a full stack developer, who is also a furry, and loves cats. Zolice is a web developer who likes to program in javascript." },
             ]
 
             context.forEach((line, index) => {
                 if (line.includes('Human:')) {
-                    preparedContext.push({role: "user", content: line.replace('Human:', '')})
+                    preparedContext.push({ role: "user", content: line.replace('Human:', '') })
                 }
                 else if (line.includes('AI:')) {
-                    preparedContext.push({role: "assistant", content: line.replace('AI:', '')})
+                    preparedContext.push({ role: "assistant", content: line.replace('AI:', '') })
                 }
             })
 
@@ -101,15 +95,13 @@ module.exports = {
                 max_tokens: 400,
 
             }).catch((err) => {
-                reply.edit("Due to an error, I couldn't get a response. Erorr: " + err)
+                message.reply("Due to an error, I couldn't get a response. Erorr: " + err)
                 console.log(err)
                 return
             })
 
             console.log(response.data)
         }
-
-
 
         // Update context
         var responseText = ""
@@ -119,16 +111,12 @@ module.exports = {
         else {
             responseText = response.data.choices[0].message.content
         }
-        // while (responseText.includes('\n')) {
-        //     responseText = responseText.replace('\n', '')
         responseText = responseText.replace('AI:', '')
-        // }
 
         if (!codex) context.push(`AI: ${response.data.choices[0].message.content}`)
-        // context.splice(0, 0, `AI: ${responseText}`)
 
         // Return the response
-        reply.edit(responseText + ".") //the dot to prevent Cannot send an empty message errors
+        message.reply(responseText + ".") //the dot to prevent Cannot send an empty message errors
 
 
         switch (type) {
