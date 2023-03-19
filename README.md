@@ -63,7 +63,7 @@ By using this bot, you can interact with ChatGPT directly through Discord, as a 
 
 * npm
   ```
-  npm install discord.js openai dotenv fs path dotenv
+  npm install
   ```
 
 ## Setting Up
@@ -97,11 +97,11 @@ _Remember to set "Usage Limits" if you are on a paid plan, to prevent unexpected
 4. Rename `.config.example` into `.config`
 5. Run discordCommands.js using the following command. This will update the commands into the Discord Bot
     ```
-    node discordCommands.js
+    npm run setcommands
     ```
 6. Run the bot using the following command
    ```
-   node main.js
+   npm run start
    ```
 7. In the channel in your Discord Server, type /registerchannel channeltype: \<channeltype\> to register the channel. <channeltype\> can be either `Open AI General` or `Open AI Multiplayer`. <b>YOU NEED TO BE AN ADMINISTRATOR OF THE SERVER TO DO THIS</b>
 8. Test the bot by typing `?name a cat for me` in the channel you registered
@@ -115,12 +115,11 @@ _Remember to set "Usage Limits" if you are on a paid plan, to prevent unexpected
 
 # Roadmap
 - [x] Add OpenAI to the bot
-- [ ] Add commands to control the bot
-- [ ] Add more features
-- [ ] Add support for multiple discord servers
-- [ ] Add Codex support
+- [x] Add commands to control the bot
+- [x] Add support for multiple discord servers
+- [x] Add Codex support
 - [ ] Add Toggle between each model
-- [ ] Add Dall-E Support
+- [x] Add Dall-E Support
 
 <p align="right"><a href="#lilygpt">back to top</a></p>
 
