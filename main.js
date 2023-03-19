@@ -14,6 +14,10 @@ const client = new Client({
     ],
 })
 
+//create context and config if not exist
+fs.existsSync('./context.json') || fs.writeFileSync('./context.json', JSON.stringify({ generalChat: {}, multiplayerChat: {} }, null, 4))
+fs.existsSync('./config.json') || fs.writeFileSync('./config.json', JSON.stringify({ discord: { registeredServers: {} } }, null, 4))
+
 client.context = require('./context.json')
 client.config = require('./config.json')
 
