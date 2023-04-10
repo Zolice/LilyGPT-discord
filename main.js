@@ -73,3 +73,20 @@ function CheckIfUserIsAdmin(guildID, userID) {
 }
 
 client.CheckIfUserIsAdmin = CheckIfUserIsAdmin
+
+async function Prompt(context) {
+    return await client.openai.createChatCompletion({
+        model: "gpt-3.5-turbo",
+        messages: context,
+        max_tokens: 400,
+    }).catch((err) => {
+        message.reply("Due to an error, I couldn't get a response. Erorr: " + err)
+        console.log(err)
+        return err
+    })
+}
+
+client.Prompt = Prompt
+
+client.WaitingGPTResponse = false
+client.queue = []
