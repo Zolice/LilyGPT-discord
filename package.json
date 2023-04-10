@@ -4,9 +4,11 @@
   "description": "a discordjs bot with chatgpt capabilities",
   "main": "dist/index.js",
   "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
     "fs-extra": "^11.1.0",
+    "langchain": "^0.0.51",
     "openai": "^3.2.1",
     "path": "^0.12.7",
     "typescript": "^5.0.4"

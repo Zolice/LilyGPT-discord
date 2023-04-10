@@ -1,7 +1,7 @@
 import { Message } from "discord.js";
 import Lily from "./lily";
 import Memories from "./memories";
-// import SuperLily from "./superLily";
+import SuperLily from "./superLily";
 
 const InitialMemory = (groupname: string) => {
     const contentRules = {
@@ -55,7 +55,7 @@ const MemoryHelper = (name: string, channelId: string, role: string, message: st
     return key
 }
 
-const StartConversation = async (name: string, channelId: string, channelName: string, prompt: string) => {
+const StartConversation = async (name: string, channelId: string, channelName: string, prompt: string, context: Message) => {
     const prompted = prompt.replace("?", "").trim()
     if (prompted.length == 0) {
         // ctx.replyWithSticker("CAACAgIAAxkBAAIEnWQVfj2JLDERQtzrsGkMzElncpPLAAJZEgAC6NbiEjAIkw41AAGcAi8E")
@@ -64,7 +64,7 @@ const StartConversation = async (name: string, channelId: string, channelName: s
 
     if (waiting) {
         console.log("pushed to queue")
-        queue.push({ name: name, channelId: channelId, prompt: prompt })
+        queue.push({ name: name, channelId: channelId, prompt: prompt, message: context })
         return
     }
     waiting = true
@@ -100,7 +100,7 @@ const StartConversation = async (name: string, channelId: string, channelName: s
                         reply += " Please wait while i ponder upon your request!"
 
                         //call superlily
-                        // SuperLily(ctx)
+                        SuperLily(context)
                     }
 
                 }
@@ -117,18 +117,26 @@ const StartConversation = async (name: string, channelId: string, channelName: s
 }
 
 const Conversation = async (message: Message) => {
-    message.channel.sendTyping()
-    let response = await StartConversation(message.author.username, message.channel.id, message.channel.isDMBased ? message.author.username : (message.channel.type as any).name, message.content)
-    if (response != null) message.reply(response)
-    // ctx.sendChatAction("typing")
-    
+    // try { message.channel.sendTyping() }
+    // catch (e) { console.log(e) }
+    console.log(message.author)
+    console.log(message.author.username)
 
-    waiting = false
+    let response = await StartConversation(message.author.username, message.channel.id, message.channel.isDMBased() ? message.author.username : (message.channel.type as any).name, message.content, message)
+    if (response != null) {
+        message.reply(response)
+        // ctx.sendChatAction("typing")
 
-    if (queue.length > 0) {
-        const next = queue.shift()
-        Conversation(next)
-        console.log("takeing data out of queue for prompt: " + (next.message as any).text ?? (next.message as any).sticker.emoji)
+        if (queue.length > 0) {
+            const next = queue.shift()
+            let response = await StartConversation(next.name, next.channelId, next.channelName, next.prompt, next.message)
+            if (response != null) {
+                message.reply(response)
+            }
+            console.log("takeing data out of queue for prompt: " + next.prompt)
+        }
+
+        waiting = false
     }
 }
 
