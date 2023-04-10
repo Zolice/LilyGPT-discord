@@ -2,19 +2,20 @@
   "name": "lilygpt",
   "version": "1.0.0",
   "description": "a discordjs bot with chatgpt capabilities",
-  "main": "main.js",
+  "main": "dist/index.js",
   "dependencies": {
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
     "fs-extra": "^11.1.0",
     "openai": "^3.2.1",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "typescript": "^5.0.4"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "setcommands": "node discordCommands.js",
-    "start": "node main.js"
+    "build": "tsc",
+    "startonly": "node dist/index.js",
+    "start": "tsc -b && node dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -27,4 +28,3 @@
   },
   "homepage": "https://github.com/Zolice/LilyGPT#readme"
 }
-
