@@ -1,9 +1,9 @@
-import { Message } from "discord.js";
+import { Client, Message } from "discord.js";
 import Lily from "./lily";
 import Memories from "./memories";
 import SuperLily from "./superLily";
 
-const InitialMemory = (groupname: string) => {
+const InitialMemory = () => {
     const contentRules = {
         rules: [
             "You must reply with one of the replyTags given to you, such as [Confident]: hello, my name is lily.",
@@ -34,10 +34,10 @@ const InitialMemory = (groupname: string) => {
 let waiting = false
 const queue = []
 
-const MemoryHelper = (name: string, channelId: string, role: string, message: string): string => {
+const MemoryHelper = (message: Message, role: string, prompt: string): string => {
 
     //memories should also separate into diff chat groups
-    let key = channelId
+    let key = message.channel.isDMBased() ? message.author.id : message.channel.id
 
     if (!Memories[key]) { //new chat group memories
         Memories[key] = []
@@ -46,36 +46,39 @@ const MemoryHelper = (name: string, channelId: string, role: string, message: st
     if (Memories[key].length > 8) { //to change to config later
         Memories[key].shift()
     }
-    let username = name.split(" ")[0]
+    let username = message.member.nickname ? message.member.nickname.split(' ')[0] : message.author.username.split(' ')[0]
 
     if (role == "assistant") {
         username = "Lily"
     }
-    Memories[key].push({ role: role, content: message, name: username })
+    Memories[key].push({ role: role, content: prompt, name: username })
     return key
 }
 
-const StartConversation = async (name: string, channelId: string, channelName: string, prompt: string, context: Message) => {
-    const prompted = prompt.replace("?", "").trim()
-    if (prompted.length == 0) {
-        // ctx.replyWithSticker("CAACAgIAAxkBAAIEnWQVfj2JLDERQtzrsGkMzElncpPLAAJZEgAC6NbiEjAIkw41AAGcAi8E")
-        return
-    }
+const Conversation = async (client: Client, message: Message) => {
+    const prompt: string = message.content
 
     if (waiting) {
         console.log("pushed to queue")
-        queue.push({ name: name, channelId: channelId, prompt: prompt, message: context })
+        queue.push(message)
         return
     }
     waiting = true
 
-    const key = MemoryHelper(name, channelId, "user", prompted)
+    const prompted = prompt.replace("?", "").trim()
+    if (prompted.length == 0) {
+        // message.replyWithSticker("CAACAgIAAxkBAAIEnWQVfj2JLDERQtzrsGkMzElncpPLAAJZEgAC6NbiEjAIkw41AAGcAi8E")
+        return
+    }
+    message.channel.sendTyping()
+
+    const key = MemoryHelper(message, "user", prompted)
 
     try {
         console.log("getting a reply")
         const response = await Lily.createChatCompletion({
             model: "gpt-3.5-turbo",
-            messages: [InitialMemory((channelId == "DM" ? "private chat" : channelName)), ...Memories[key]],
+            messages: [InitialMemory(), ...Memories[key]],
             max_tokens: 400,
             temperature: 0.5,
 
@@ -83,10 +86,10 @@ const StartConversation = async (name: string, channelId: string, channelName: s
         console.log("after a reply")
         console.log(response.status)
         if (response.status != 200) {
-            return ("Sorry, i couldn't generate a response c: " + response.status)
+            message.reply("Sorry, i couldn't generate a response c: " + response.status)
         }
         else {
-            MemoryHelper("Lily", channelId, "assistant", response.data.choices[0].message.content ?? "")
+            MemoryHelper(message, "assistant", response.data.choices[0].message.content ?? "")
             const pattern = /\[.*?\]/
             const tags = response.data.choices[0].message.content.match(pattern)
             let reply = response.data.choices[0].message.content
@@ -100,44 +103,30 @@ const StartConversation = async (name: string, channelId: string, channelName: s
                         reply += " Please wait while i ponder upon your request!"
 
                         //call superlily
-                        SuperLily(context)
+                        SuperLily(client, message)
                     }
 
                 }
             }
-            return reply ?? "Sorry, I couldn't generate a response" + response.status
+
+
+            message.reply(reply ?? "Sorry, i couldn't generate a response :c" + response.status)
+        }
+
+        waiting = false
+
+        if (queue.length > 0) {
+            const next = queue.shift()
+            Conversation(client, next)
+            console.log("takeing data out of queue for prompt: " + next.content)
         }
     }
     catch (e) {
         console.log(e)
-        waiting = false
-        return "Sorry, i couldn't generate a response c: " + e
-    }
-
-}
-
-const Conversation = async (message: Message) => {
-    // try { message.channel.sendTyping() }
-    // catch (e) { console.log(e) }
-    console.log(message.author)
-    console.log(message.author.username)
-
-    let response = await StartConversation(message.author.username, message.channel.id, message.channel.isDMBased() ? message.author.username : (message.channel.type as any).name, message.content, message)
-    if (response != null) {
-        message.reply(response)
-        // ctx.sendChatAction("typing")
-
-        if (queue.length > 0) {
-            const next = queue.shift()
-            let response = await StartConversation(next.name, next.channelId, next.channelName, next.prompt, next.message)
-            if (response != null) {
-                message.reply(response)
-            }
-            console.log("takeing data out of queue for prompt: " + next.prompt)
-        }
-
+        message.reply("Sorry, i couldn't generate a response c: " + e)
         waiting = false
     }
+
 }
 
 export default Conversation

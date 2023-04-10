@@ -6,9 +6,9 @@ import GoogleCustomSearchAPI from "./tools/googleCustomSearch";
 import TimeAPI from "./tools/time";
 import SuperMathAPI from "./tools/superMath";
 import WebScraper from "./tools/scraper";
-import { Message } from "discord.js";
+import { Client, Message } from "discord.js";
 
-const SuperLily = async (ctx: Message) => {
+const SuperLily = async (client: Client, ctx: Message) => {
     const prompt: string = ctx.content
     const prompted = prompt.replace("!", "").replace("?", "").trim()
 
@@ -16,7 +16,7 @@ const SuperLily = async (ctx: Message) => {
     try {
         const tools = [new SuperMathAPI(), new GoogleCustomSearchAPI(), new TimeAPI(), new WebScraper()];
         const callbackManager = new CallbackManager();
-        callbackManager.addHandler(new SuperLilyCallbackHandler(ctx))
+        callbackManager.addHandler(new SuperLilyCallbackHandler(client, ctx))
         // Create the agent from the chat model and the tools
         const agent = ChatAgent.fromLLMAndTools(new ChatOpenAI({
             temperature: 0.3,
