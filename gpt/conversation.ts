@@ -46,7 +46,7 @@ const MemoryHelper = (message: Message, role: string, prompt: string): string =>
     if (Memories[key].length > 8) { //to change to config later
         Memories[key].shift()
     }
-    let username = message.member.nickname ? message.member.nickname.split(' ')[0] : message.author.username.split(' ')[0]
+    let username = message.member.nickname ? (message.member.nickname as any).replaceAll(" ", "") : message.author.username.split(' ')[0]
 
     if (role == "assistant") {
         username = "Lily"
@@ -76,6 +76,7 @@ const Conversation = async (client: Client, message: Message) => {
 
     try {
         console.log("getting a reply")
+        console.log([InitialMemory(), ...Memories[key]])
         const response = await Lily.createChatCompletion({
             model: "gpt-3.5-turbo",
             messages: [InitialMemory(), ...Memories[key]],
