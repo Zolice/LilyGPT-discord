@@ -46,7 +46,7 @@ const MemoryHelper = (message: Message, role: string, prompt: string): string =>
     if (Memories[key].length > 8) { //to change to config later
         Memories[key].shift()
     }
-    let username = message.member.nickname ? (message.member.nickname as any).replaceAll(" ", "") : message.author.username.split(' ')[0]
+    let username = (message.member.displayName as any).replaceAll(" ", "")
 
     if (role == "assistant") {
         username = "Lily"
