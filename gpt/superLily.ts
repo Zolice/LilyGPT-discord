@@ -29,13 +29,13 @@ const SuperLily = async (client: Client, ctx: Message) => {
         executor.returnIntermediateSteps = true;
         executor.maxIterations = 5;
 
-        ctx.channel.send("Please give me a moment to think about your request.")
+        // ctx.channel.send("Please give me a moment to think about your request.")
         const responseG = await executor.call(
             { input: prompted }
         );
 
         console.log(responseG);
-        ctx.reply(responseG.output)
+        // ctx.reply(responseG.output)
     }
     catch (e) {
         console.log("Error encountered: " + e)

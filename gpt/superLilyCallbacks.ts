@@ -5,31 +5,37 @@ import { ChainValues, AgentAction, AgentFinish } from "langchain/schema";
 export class SuperLilyCallbackHandler extends BaseCallbackHandler {
   private ctx: Message
   private embed: EmbedBuilder
+  private message: Message
 
   constructor(client: Client, ctx: Message) {
     super()
     this.ctx = ctx
     this.embed = new EmbedBuilder()
-    this.embed.setURL(ctx.url)
-    this.embed.setAuthor({ name: ctx.author.username, iconURL: ctx.author.avatarURL() })
-    this.embed.setThumbnail(client.user.avatarURL())
-    this.embed.setTitle(ctx.content)
-    this.embed.setTimestamp()
-    this.embed.setFooter({ text: `Provided by ${client.user.username}`, iconURL: client.user.avatarURL() })
+      .setAuthor({ name: ctx.member.displayName, iconURL: ctx.author.avatarURL() })
+      .setThumbnail(client.user.avatarURL())
+      .setTitle(ctx.content)
+      .setTimestamp()
+      .setFooter({ text: `Provided by ${client.user.username}`, iconURL: client.user.avatarURL() })
+      .setColor('Random')
   }
 
   async handleChainError(err: any, verbose?: boolean): Promise<void> {
     console.log("an tool errored:" + err)
-    this.ctx.channel.send("error:" + err)
+    // this.ctx.channel.send("error:" + err)
+    this.embed.addFields(
+      { name: "Error", value: err }
+    )
+
   }
 
   async handleChainStart(chain: { name: string }) {
     console.log(`Entering new ${chain.name} chain...`);
-    // this.ctx.channel.send({ embeds: [this.embed] })
+    this.message = await this.ctx.channel.send({ embeds: [this.embed] })
   }
 
   async handleChainEnd(_output: ChainValues) {
-    console.log("Finished chain.");
+    console.log("Finished chain. Output: " + _output);
+    console.log(_output)
   }
 
   async handleAgentAction(action: AgentAction) {
@@ -41,8 +47,12 @@ export class SuperLilyCallbackHandler extends BaseCallbackHandler {
         thinking = thought[0]
       }
     }
-    this.ctx.channel.send(thinking
-      + "\nI will need to use " + action.tool + " to think about " + action.toolInput)
+
+    this.embed.addFields(
+      { name: thinking, value: `Using ${action.tool} on ${action.toolInput}` }
+    )
+    this.message.edit({ embeds: [this.embed] })
+    // this.ctx.channel.send(thinking + "\nI will need to use " + action.tool + " to think about " + action.toolInput)
   }
 
   async handleToolEnd(output: string) {
@@ -55,5 +65,8 @@ export class SuperLilyCallbackHandler extends BaseCallbackHandler {
 
   async handleAgentEnd(action: AgentFinish) {
     console.log("an agent ended:" + action.log);
+
+    this.embed.addFields({ name: "Finished", value: action.log })
+    this.message.edit({ embeds: [this.embed] })
   }
 }

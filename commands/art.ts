@@ -41,6 +41,7 @@ export const artExecute = async (interaction: CommandInteraction, client: Client
             .setDescription(quote)
             .setImage(response)
             .setFooter({ text: `Provided by ${client.user.username} /art`, iconURL: client.user.avatarURL() })
+            .setTimestamp()
 
 
         // await interaction.editReply(`${quote}\n${response}`)
