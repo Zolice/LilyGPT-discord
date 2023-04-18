@@ -5,11 +5,11 @@ import SuperLily from "../gpt/superLily";
 const MessageCreateEvent = (message: Message, client: Client) => {
     if(message.author.bot) return
 
-    let codeRequest = ""
+    let messageCommand = null
     let promptRequest = ""
     let superLilyRequest = ""
 
-    if (message.content.startsWith('//')) codeRequest = message.content.replace('//', '')
+    if (message.content.startsWith('/')) messageCommand = message
     if (message.content.startsWith('?')) promptRequest = message.content.replace('?', '')
     if (message.content.startsWith('!')) superLilyRequest = message.content.replace('!', '')
 
@@ -18,6 +18,9 @@ const MessageCreateEvent = (message: Message, client: Client) => {
     }
     if(superLilyRequest) {
         SuperLily(client, message)
+    }
+    if(messageCommand) {
+        
     }
 }
 

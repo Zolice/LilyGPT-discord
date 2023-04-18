@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 import EventManager from './events/eventManager'
-import { CommandManager } from './commands/commandManager'
+import { InteractionCommandManager, MessageCommandManager } from './commands/commandManager'
 
 const client = new Client({
     intents: [
@@ -18,6 +18,8 @@ const client = new Client({
 
 EventManager(client)
 
-CommandManager()
+InteractionCommandManager()
+
+MessageCommandManager()
 
 client.login(process.env.DISCORD_API_KEY)
