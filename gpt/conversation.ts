@@ -113,7 +113,7 @@ const Conversation = async (client: Client, message: Message) => {
             }
 
 
-            message.reply(reply ?? "Sorry, i couldn't generate a response :c" + response.status)
+            await message.reply(reply ?? "Sorry, i couldn't generate a response :c" + response.status)
         }
 
         waiting = false

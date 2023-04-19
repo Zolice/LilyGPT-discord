@@ -25,7 +25,7 @@ export class SuperLilyCallbackHandler extends BaseCallbackHandler {
     this.embed.addFields(
       { name: "Error", value: err }
     )
-
+    this.message.edit({ embeds: [this.embed] })
   }
 
   async handleChainStart(chain: { name: string }) {
