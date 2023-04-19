@@ -103,8 +103,7 @@ _Remember to set "Usage Limits" if you are on a paid plan, to prevent unexpected
    ```
    npm run start
    ```
-7. In the channel in your Discord Server, type /registerchannel channeltype: \<channeltype\> to register the channel. <channeltype\> can be either `Open AI General` or `Open AI Multiplayer`. <b>YOU NEED TO BE AN ADMINISTRATOR OF THE SERVER TO DO THIS</b>
-8. Test the bot by typing `?name a cat for me` in the channel you registered
+7. Test the bot by typing `?Who are your creators` into any channel LilyGPT has access to.
 
 <p align="right"><a href="#lilygpt">back to top</a></p>
 
@@ -117,9 +116,11 @@ _Remember to set "Usage Limits" if you are on a paid plan, to prevent unexpected
 - [x] Add OpenAI to the bot
 - [x] Add commands to control the bot
 - [x] Add support for multiple discord servers
-- [x] Add Codex support
-- [ ] Add Toggle between each model
 - [x] Add Dall-E Support
+- [x] Use TypeScript
+- [ ] Use Embeds
+- [x] Add LangChain
+- [ ] Add Queue System
 
 <p align="right"><a href="#lilygpt">back to top</a></p>
 
