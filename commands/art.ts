@@ -29,23 +29,24 @@ export const artExecute = async (interaction: CommandInteraction, client: Client
             return
         }
 
-        let quote = await ConversationSingle(`I have drawn a ${request}, write a short quote about it.`)
-
         let name = (interaction.member as GuildMember).displayName
-
         let embed = new EmbedBuilder()
             .setColor("Random")
             // .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
             .setAuthor({ name: name, iconURL: interaction.user.avatarURL() })
             .setTitle(`${request}`)
-            .setDescription(quote)
             .setImage(response)
             .setFooter({ text: `Provided by ${client.user.username} /art`, iconURL: client.user.avatarURL() })
             .setTimestamp()
-
-
-        // await interaction.editReply(`${quote}\n${response}`)
         await interaction.editReply({ content: "", embeds: [embed] })
+
+        let quote = await ConversationSingle(`I have drawn a ${request}, write a short quote about it.`)
+        if (quote.startsWith("Sorry, i couldn't generate a response c: ")) {
+            return
+        }
+        embed.setDescription(quote)
+        await interaction.editReply({ content: "", embeds: [embed] })
+
     })
 
 }
