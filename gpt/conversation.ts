@@ -48,7 +48,7 @@ const MemoryHelper = (message: Message, role: string, prompt: string): string =>
         Memories[key].shift()
     }
     // let username = (message.member.displayName as any).replaceAll(" ", "")
-    let username = message.author.username
+    let username = (message.author.username as any).replaceAll(" ", "")
 
     if (role == "assistant") {
         username = "Lily"
