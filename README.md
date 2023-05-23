@@ -94,16 +94,15 @@ _Remember to set "Usage Limits" if you are on a paid plan, to prevent unexpected
 1. If not done, <a href="#prerequisites">install the required packages using npm</a>
 2. Rename the `.env.example` into `.env`
 3. Update the `.env` file with your Discord Bot's Token, Discord Client ID and OpenAI Token accordingly
-4. Rename `.config.example` into `.config`
-5. Run discordCommands.js using the following command. This will update the commands into the Discord Bot
+4. Register Discord Commands
     ```
-    npm run setcommands
+    npm run registerCommands
     ```
-6. Run the bot using the following command
+5. Run the bot using the following command
    ```
    npm run start
    ```
-7. Test the bot by typing `?Who are your creators` into any channel LilyGPT has access to.
+6. Test the bot by typing `?Who are your creators` into any channel LilyGPT has access to.
 
 <p align="right"><a href="#lilygpt">back to top</a></p>
 
