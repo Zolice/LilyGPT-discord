@@ -11,13 +11,13 @@ const MessageCreateEvent = (message: Message, client: Client) => {
 
     if (message.content.startsWith('/')) messageCommand = message
     if (message.content.startsWith('?')) promptRequest = message.content.replace('?', '')
-    if (message.content.startsWith('!')) superLilyRequest = message.content.replace('!', '')
+    if (message.content.startsWith('%')) superLilyRequest = message.content.replace('%', '')
 
     if(promptRequest) {
         Conversation(client, message)
     }
     if(superLilyRequest) {
-        SuperLily(client, message)
+        // SuperLily(client, message)
     }
     if(messageCommand) {
         
