@@ -17,7 +17,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "startonly": "node dist/index.js",
-    "start": "tsc -b && node dist/index.js"
+    "start": "tsc -b && node dist/index.js",
+    "registerCommands": "tsc -b && node dist/discordCommands.js"
   },
   "repository": {
     "type": "git",
