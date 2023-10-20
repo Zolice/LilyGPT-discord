@@ -8,7 +8,7 @@ const ConversationSingle = async (prompt: string) => {
     }
 
     const response = await Lily.createChatCompletion({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: [preparedContext],
         max_tokens: 400,
 
