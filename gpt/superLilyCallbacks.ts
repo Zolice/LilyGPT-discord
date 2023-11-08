@@ -23,7 +23,7 @@ export class SuperLilyCallbackHandler extends BaseCallbackHandler {
     console.log("an tool errored:" + err)
     // this.ctx.channel.send("error:" + err)
     this.embed.addFields(
-      { name: "Error", value: err }
+      { name: "Error", value: String(err) }
     )
     this.message.edit({ embeds: [this.embed] })
   }
@@ -36,6 +36,10 @@ export class SuperLilyCallbackHandler extends BaseCallbackHandler {
   async handleChainEnd(_output: ChainValues) {
     console.log("Finished chain. Output: " + _output);
     console.log(_output)
+    this.embed.addFields(
+      { name: "Output", value: String(_output.output) }
+    ).setColor('#FF0000')
+    this.message.edit({ embeds: [this.embed] })
   }
 
   async handleAgentAction(action: AgentAction) {

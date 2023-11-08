@@ -17,7 +17,7 @@ const MessageCreateEvent = (message: Message, client: Client) => {
         Conversation(client, message)
     }
     if(superLilyRequest) {
-        // SuperLily(client, message)
+        SuperLily(client, message)
     }
     if(messageCommand) {
         
