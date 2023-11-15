@@ -59,7 +59,7 @@ const MemoryHelper = (message: Message, role: string, prompt: string): string =>
 
 const Conversation = async (client: Client, message: Message) => {
     const prompt: string = message.content
-
+    let result = ""
     if (waiting) {
         console.log("pushed to queue")
         queue.push(message)
@@ -79,43 +79,35 @@ const Conversation = async (client: Client, message: Message) => {
     try {
         console.log("getting a reply")
         console.log([InitialMemory(), ...Memories[key]])
-        const response = await Lily.createChatCompletion({
+        const response = await Lily.chat.completions.create({
             model: "gpt-4",
             messages: [InitialMemory(), ...Memories[key]],
             max_tokens: 400,
             temperature: 0.5,
 
         })
-        console.log("after a reply")
-        console.log(response.status)
-        if (response.status != 200) {
-            message.reply("Sorry, i couldn't generate a response c: " + response.status)
-        }
-        else {
-            MemoryHelper(message, "assistant", response.data.choices[0].message.content ?? "")
-            const pattern = /\[.*?\]/
-            const tags = response.data.choices[0].message.content.match(pattern)
-            let reply = response.data.choices[0].message.content
-            if (tags) {
-                if (tags.length > 0) {
-                    //get the tag
+        
+        MemoryHelper(message, "assistant", response.choices[0].message.content ?? "")
+        const pattern = /\[.*?\]/
+        const tags = response.choices[0].message.content.match(pattern)
+        let reply = response.choices[0].message.content
+        result = reply
+        if (tags) {
+            if (tags.length > 0) {
+                //get the tag
 
-                    const tag = tags[0]
-                    reply = response.data.choices[0].message.content.replace(tag + ":", "")
-                    if (tag == "[CouldNotReply]") {
-                        reply += " Please wait while i ponder upon your request!"
+                const tag = tags[0]
+                reply = response.choices[0].message.content.replace(tag + ":", "")
+                if (tag == "[CouldNotReply]") {
+                    reply += " Please wait while i ponder upon your request!"
 
-                        //call superlily
-                        SuperLily(client, message)
-                    }
-
+                    //call superlily
+                    SuperLily(client, message)
                 }
             }
-
-
-            await message.reply(reply ?? "Sorry, i couldn't generate a response :c" + response.status)
         }
 
+        await message.reply(reply ?? "Sorry, i couldn't generate a response as there was no reply :c")
         waiting = false
 
         if (queue.length > 0) {
@@ -129,6 +121,8 @@ const Conversation = async (client: Client, message: Message) => {
         message.reply("Sorry, i couldn't generate a response c: " + e)
         waiting = false
     }
+
+    return result
 
 }
 
