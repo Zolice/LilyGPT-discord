@@ -27,7 +27,11 @@ const LilyTTS = async (client: Client, message: Message) => {
         const buffer = Buffer.from(await audioReply.arrayBuffer());
         await fs.promises.writeFile(speechFile, buffer);
         //JOIN VC and den talk
-        const channel = message.guild.channels.cache.find(channel => channel.name == "lily-speaks")
+        if (!message.member.voice.channel) {
+            return message.reply('You need to join a voice channel first!');
+        }
+        
+        const channel = message.member.voice.channel
 
         const connection = joinVoiceChannel({
             channelId: channel.id,
