@@ -30,7 +30,7 @@ export class SuperLilyCallbackHandler extends BaseCallbackHandler {
 
   async handleChainStart(chain: { name: string }) {
     console.log(`Entering new ${chain.name} chain...`);
-    this.message = await this.ctx.channel.send({ embeds: [this.embed] })
+    this.message = await (this.ctx.channel as any).send({ embeds: [this.embed] })
   }
 
   async handleChainEnd(_output: ChainValues) {

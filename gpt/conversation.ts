@@ -63,16 +63,16 @@ const Conversation = async (client: Client, message: Message) => {
     if (waiting) {
         console.log("pushed to queue")
         queue.push(message)
-        return
+        return ""
     }
     waiting = true
 
     const prompted = prompt.replace("?", "").trim()
     if (prompted.length == 0) {
         // message.replyWithSticker("CAACAgIAAxkBAAIEnWQVfj2JLDERQtzrsGkMzElncpPLAAJZEgAC6NbiEjAIkw41AAGcAi8E")
-        return
+        return ""
     }
-    message.channel.sendTyping()
+    (message.channel as any).sendTyping()
 
     const key = MemoryHelper(message, "user", prompted)
 
@@ -115,6 +115,7 @@ const Conversation = async (client: Client, message: Message) => {
             Conversation(client, next)
             console.log("takeing data out of queue for prompt: " + next.content)
         }
+        return result
     }
     catch (e) {
         console.log(e)
