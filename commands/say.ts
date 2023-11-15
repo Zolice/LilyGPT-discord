@@ -14,8 +14,8 @@ export const sayData = new SlashCommandBuilder()
 export const sayExecute = async (interaction: CommandInteraction, client: Client) => {
     console.log("Say command executed: " + interaction.options.get('message').value + " by " + interaction.user.username + " in " + interaction.channel.name)
 
-    if (!CheckAdmin(interaction.guildId, interaction.user.id, client)) return interaction.reply({ content: 'Error: Administrative rights required.', ephemeral: true })
+    if (!CheckAdmin(interaction.guildId, interaction.user.id, client)) return await interaction.reply({ content: 'Error: Administrative rights required.', ephemeral: true });
 
-    interaction.channel.send(interaction.options.get('message').value as string)
+    (interaction.channel as any).send(interaction.options.get('message').value as string)
     await interaction.reply({ content: 'Sent!', ephemeral: true })
 }

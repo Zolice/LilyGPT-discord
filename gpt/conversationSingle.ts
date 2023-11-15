@@ -6,19 +6,20 @@ const ConversationSingle = async (prompt: string) => {
         role: "user",
         content: prompt,
     }
-
-    const response = await Lily.createChatCompletion({
-        model: "gpt-4",
-        messages: [preparedContext],
-        max_tokens: 400,
-
-    })
-    console.log(response)
-    if (response.status != 200) {
-        return ("Sorry, i couldn't generate a response c: " + response.status)
-    }
-    else {
-        return (response.data.choices[0].message.content ?? "Sorry, i couldn't generate a response c: " + response.status)
+    
+    try {
+        const response = await Lily.chat.completions.create({
+            model: "gpt-4",
+            messages: [preparedContext],
+            max_tokens: 400,
+    
+        })
+        console.log(response)
+        
+        return (response.choices[0].message.content ?? "Sorry, i couldn't generate a response, as there was no reply c: ")
+        
+    } catch (e) {
+        return ("Sorry, i couldn't generate a response c: " + e)
     }
 }
 

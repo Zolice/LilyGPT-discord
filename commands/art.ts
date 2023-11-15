@@ -19,13 +19,14 @@ export const artExecute = async (interaction: CommandInteraction, client: Client
         interaction.reply({ content: "Tell me what you would like to draw, with /art <search term>", ephemeral: true })
         return
     }
-    interaction.reply("Grabbing Crayons...")
-    interaction.channel.sendTyping()
+    await interaction.reply("Grabbing Crayons...");
+    
+    (interaction.channel as any).sendTyping()
 
 
     GenerateArt(request, interaction.user.username).then(async (response: string) => {
         if (response.startsWith("Sorry")) {
-            interaction.channel.send(response)
+            (interaction.channel as any).send(response)
             return
         }
 
