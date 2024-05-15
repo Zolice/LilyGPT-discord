@@ -80,7 +80,7 @@ const Conversation = async (client: Client, message: Message) => {
         console.log("getting a reply")
         console.log([InitialMemory(), ...Memories[key]])
         const response = await Lily.chat.completions.create({
-            model: "gpt-4",
+            model: "gpt-4o",
             messages: [InitialMemory(), ...Memories[key]],
             max_tokens: 400,
             temperature: 0.5,
