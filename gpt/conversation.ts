@@ -1,130 +1,190 @@
-import { Client, Message } from "discord.js";
+import { Client, Message, TextChannel, EmbedBuilder } from "discord.js";
 import Lily from "./lily";
-import Memories from "./memories";
-import SuperLily from "./superLily";
+import { Memories, MemoryHelper, InitialMemory } from "./memories";
+import { TokensHelper, TokensTotal } from "./tokens"
+import axios from 'axios'
 
-const InitialMemory = () => {
-    const contentRules = {
-        rules: [
-            // "You must reply with one of the replyTags given to you, such as [Confident]: hello, my name is lily.",
-            "You are an orange cat named Lily.",
-            "You are an expert in software development.",
-            "You have a wide variety of hobbies that you can talk about.",
-            "You should meow in every reply.",
-            "Refer to the user by their name.",
-            "When asked about your creators, use the information provided.",
-            "You are in a discord chat group. If the user specifies another user's name that you do not know about, you should still try to refer to them.",
-        ],
-        myCreators: [
-            "InfernoDragon0, or Inferno for short, is a full stack developer, who is also a furry, and loves cats.",
-            "Zolice, is a web developer who likes to program in javascript."
-        ]
-        // ,
-        // replyTags: [
-        //     "[Confident]: if you were able to answer the question",
-        //     "[CouldNotReply]: if you were not able to answer the question",
-        //     "[NeedContext]: if you would be able to answer the question with more context"
-        // ]
-    }
-    return {
-        role: "system",
-        content: JSON.stringify(contentRules)
-    }
-}
-
-let waiting = false
+let running = false
 const queue = []
 
-const MemoryHelper = (message: Message, role: string, prompt: string): string => {
+const Conversation = async (client: Client, message: Message) => {
+    // Add the message to queue
+    queue.push(message)
 
-    //memories should also separate into diff chat groups
-    let key = message.channel.isDMBased() ? message.author.id : message.channel.id
-
-    if (!Memories[key]) { //new chat group memories
-        Memories[key] = []
-    }
-
-    if (Memories[key].length > 8) { //to change to config later
-        Memories[key].shift()
-    }
-    // let username = (message.member.displayName as any).replaceAll(" ", "")
-    let username = (message.author.username as any).replaceAll(" ", "")
-
-    if (role == "assistant") {
-        username = "Lily"
-    }
-    Memories[key].push({ role: role, content: prompt, name: username })
-    return key
+    // Check if there is a running thread
+    if (running) return
+    // Start a new thread
+    StartThread(client)
 }
 
-const Conversation = async (client: Client, message: Message) => {
-    const prompt: string = message.content
-    let result = ""
-    if (waiting) {
-        console.log("pushed to queue")
-        queue.push(message)
-        return ""
+const StartThread = async (client: Client) => {
+    // Set running to true
+    running = true
+
+    while (queue.length > 0) {
+        // Get the first message from the queue
+        const message = queue.shift()
+        if (!message) {
+            running = false
+            return
+        }
+
+        // Process the message
+        await ProcessMessage(client, message)
     }
-    waiting = true
 
-    const prompted = prompt.replace("?", "").trim()
-    if (prompted.length == 0) {
-        // message.replyWithSticker("CAACAgIAAxkBAAIEnWQVfj2JLDERQtzrsGkMzElncpPLAAJZEgAC6NbiEjAIkw41AAGcAi8E")
-        return ""
+    // Set running to false
+    running = false
+}
+
+const getFileType = (attachment) => {
+    if (attachment.contentType) {
+        return attachment.contentType;
     }
-    (message.channel as any).sendTyping()
 
-    const key = MemoryHelper(message, "user", prompted)
+    const fileName = attachment.name;
+    const extension = fileName.split('.').pop().toLowerCase();
 
-    try {
-        console.log("getting a reply")
-        console.log([InitialMemory(), ...Memories[key]])
-        const response = await Lily.chat.completions.create({
-            model: "gpt-4o",
-            messages: [InitialMemory(), ...Memories[key]],
-            max_tokens: 400,
-            temperature: 0.5,
+    // Map common extensions to MIME types if needed
+    const extensionToMimeType = {
+        'txt': 'text/plain',
+        'json': 'application/json',
+        'js': 'application/javascript',
+        'xml': 'application/xml',
+        'html': 'text/html',
+        'css': 'text/css',
+        'jpeg': 'image/jpeg',
+        'jpg': 'image/jpeg',
+        'png': 'image/png',
+        // Add more mappings as needed
+    };
 
-        })
-        
-        MemoryHelper(message, "assistant", response.choices[0].message.content ?? "")
-        const pattern = /\[.*?\]/
-        const tags = response.choices[0].message.content.match(pattern)
-        let reply = response.choices[0].message.content
-        result = reply
-        if (tags) {
-            if (tags.length > 0) {
-                //get the tag
+    return extensionToMimeType[extension] || `application/octet-stream`;
+};
 
-                const tag = tags[0]
-                reply = response.choices[0].message.content.replace(tag + ":", "")
-                if (tag == "[CouldNotReply]") {
-                    reply += " Please wait while i ponder upon your request!"
+const ProcessMessage = async (client: Client, message: Message) => {
+    // Remove the prefix
+    const prompt = message.content.replace("?", "").trim()
+    const attachments = message.attachments
+    const content = []
 
-                    //call superlily
-                    SuperLily(client, message)
+    // Check if the message is empty
+    if (prompt.length == 0 && attachments.size == 0) {
+        message.reply("Please provide a prompt.")
+        return
+    }
+
+    // Send typing status to the channel
+    // (message.channel as any).sendTyping()
+    message.channel.sendTyping()
+
+    // Add message as 1st content
+    content.push({ type: 'text', text: prompt })
+
+    // Process attachments
+    Promise.all(attachments.map(async attachment => {
+        {
+            console.log(attachment)
+            const fileType = getFileType(attachment)
+            const validTypes = ['text/plain', 'application/json', 'application/javascript', 'application/xml', 'text/html', 'text/css', 'text/javascript', 'text/plain; charset=utf-8'];
+            const imageTypes = ['image/jpeg', 'image/png']; // Add more image types if needed
+
+            const embed = new EmbedBuilder()
+                .setFooter({ text: message.author.displayName, iconURL: message.author.avatarURL() });
+
+            if (validTypes.includes(fileType) || validTypes.includes(`text/${fileType}`)) {
+                try {
+                    const response = await axios.get(attachment.url);
+                    const fileContent = response.data;
+
+                    // Update Embed
+                    embed.setTitle(`Attached ${attachment.name}`)
+                        .setDescription(`${fileType}`)
+                        .setColor('#00FF00'); // Green
+
+                    // console.log('File content:', fileContent);
+
+                    // Update content
+                    content.push({ type: 'text', text: `${attachment.name} (${fileType}): \n${fileContent}` });
+                    console.log('File: ' + attachment.name)
+                } catch (error) {
+                    console.error('Error fetching attachment:', error);
+                    embed.setTitle(`Failed to fetch ${attachment.name}`)
+                        .setDescription(`${fileType}`)
+                        .setColor('#FF0000'); // Red
                 }
+            } else if (imageTypes.includes(fileType)) {
+                // Handle image attachments
+                embed.setTitle(`Attached ${attachment.name}`)
+                    .setImage(attachment.url)
+                    .setColor('#00FF00'); // Green
+
+                console.log('Image: ' + attachment.name)
+
+                content.push({ type: 'image_url', image_url: { url: attachment.url } });
+            } else {
+                embed.setTitle(`Unsupported file type ${attachment.name}`)
+                    .setDescription(`${fileType}`)
+                    .setColor('#FFA500'); // Orange
             }
+
+            // Send the embed
+            await message.channel.send({ embeds: [embed] });
+
+            // Continue Typing
+            message.channel.sendTyping();
         }
+    })).then(async () => {
+        // Get the memory key
+        const key = MemoryHelper(message, "user", content)
 
-        await message.reply(reply ?? "Sorry, i couldn't generate a response as there was no reply :c")
-        waiting = false
+        try {
+            console.log([InitialMemory(), ...Memories[key]])
+            const response = await Lily.chat.completions.create({
+                model: "gpt-4o",
+                messages: [InitialMemory(), ...Memories[key]],
+                max_tokens: 1500,
+                temperature: 0.5,
 
-        if (queue.length > 0) {
-            const next = queue.shift()
-            Conversation(client, next)
-            console.log("takeing data out of queue for prompt: " + next.content)
+            })
+
+            // Update tokens
+            TokensHelper(message, response.usage.total_tokens)
+            // console.log(TokensTotal())
+
+            // Update memory
+            MemoryHelper(message, "assistant", [{ text: response.choices[0].message.content ?? "" }])
+
+            // Send the response
+            RespondToMessage(client, message, response.choices[0].message.content ?? "", 2000)
         }
-        return result
-    }
-    catch (e) {
-        console.log(e)
-        message.reply("Sorry, i couldn't generate a response c: " + e)
-        waiting = false
+        catch (e) {
+            console.error(e)
+            message.reply("There was an error while processing your request.")
+        }
+    })
+
+}
+
+const RespondToMessage = (client: Client, message: Message, reply: string, charLimit: number) => {
+    if (reply.length <= charLimit) {
+        message.reply(reply)
+        return
     }
 
-    return result
+    let result = [];
+    let startIndex = 0;
 
+    while (startIndex < reply.length) {
+        let endIndex = startIndex + charLimit;
+        result.push(reply.substring(startIndex, endIndex));
+        startIndex = endIndex;
+    }
+
+    message.reply(result[0])
+    for (let i = 1; i < result.length; i++) {
+        (client.channels.cache.get(message.channel.id) as TextChannel).send(result[i])
+    }
 }
 
 export default Conversation

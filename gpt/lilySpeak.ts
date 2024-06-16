@@ -26,7 +26,7 @@ const LilySpeak = async (client: Client, message: Message) => {
         //generate using TTS openai
         let audioReply = await Lily.audio.speech.create({
             model: "tts-1-hd",
-            input: response,
+            input: (response as any),
             voice: "fable",
         })
 

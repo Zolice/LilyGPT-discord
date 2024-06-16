@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import Memories from '../gpt/memories'
+import { Memories } from '../gpt/memories'
 import { Client, CommandInteraction } from 'discord.js'
 
 export const clearData = new SlashCommandBuilder()
